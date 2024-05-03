@@ -11,6 +11,7 @@ pub struct Arguments {
 pub fn get_arguments() -> Arguments {
     // Get the arguments
     let mut args = env::args();
+    args.next(); // skip the program name
     // First argument should be the initiator
     let initiator = args.next().expect("Pass the initiator address as the first argument.");
     let initiator: SocketAddr = initiator.parse().expect("Cannot parse the initiator address.");
