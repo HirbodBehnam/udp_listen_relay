@@ -1,0 +1,51 @@
+name: Build Releases
+on:
+  push:
+    tags:
+      - v*.*.*
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-cross:
+    runs-on: ubuntu-latest
+    env:
+      RUST_BACKTRACE: full
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+          - i686-unknown-linux-gnu
+          - i686-unknown-linux-musl
+          - armv7-unknown-linux-musleabihf
+          - arm-unknown-linux-musleabihf
+          - aarch64-unknown-linux-gnu
+          - aarch64-unknown-linux-musl
+          - mips-unknown-linux-musl
+          - mipsel-unknown-linux-musl
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: build
+          args: --release --target ${{ matrix.target }}
+      - name: Rename artifacts and compress
+        run: |
+          cd target/${{ matrix.target }}/release
+          xz -k udp_listen_relay
+          mv udp_listen_relay.xz udp_listen_relay_${{ matrix.target }}.xz
+
+      - name: Upload Github Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: target/${{ matrix.target }}/release/*.xz
+          prerelease: ${{ contains(github.ref, '-') }}
