@@ -34,7 +34,7 @@ jobs:
         uses: houseabsolute/actions-rust-cross@v0
         with:
           command: build
-          target: ${{ matrix.platform.target }}
+          target: ${{ matrix.target }}
           args: "--release"
 
       - name: Rename artifacts and compress
