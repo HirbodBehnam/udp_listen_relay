@@ -27,17 +27,16 @@ jobs:
           - mipsel-unknown-linux-musl
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions-rs/toolchain@v1
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build binary
+        uses: houseabsolute/actions-rust-cross@v0
         with:
-          toolchain: stable
-          target: ${{ matrix.target }}
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          use-cross: true
           command: build
-          args: --release --target ${{ matrix.target }}
+          target: ${{ matrix.platform.target }}
+          args: "--release"
+
       - name: Rename artifacts and compress
         run: |
           cd target/${{ matrix.target }}/release
@@ -48,4 +47,3 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: target/${{ matrix.target }}/release/*.xz
-          prerelease: ${{ contains(github.ref, '-') }}
